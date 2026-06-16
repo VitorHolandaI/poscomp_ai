@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ topic }}{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <h1>{{ topic }}</h1>
+  <p><a href="/temas">← Todos os temas</a> · {{ questions | length }} questões</p>
+</section>
+
+<section class="question-list">
+  {% for q in questions %}
+  <a class="question-row" href="/exams/{{ q.exam_id }}?q={{ q.number }}">
+    <strong>{{ q.number }}</strong>
+    <span>
+      {{ q.exam_title }} ({{ q.year }})
+      {% if q.subtopic %}<small>· {{ q.subtopic }}</small>{% endif %}
+    </span>
+  </a>
+  {% else %}
+  <article class="card"><p>Nenhuma questão publicada neste tema ainda.</p></article>
+  {% endfor %}
+</section>
+{% endblock %}

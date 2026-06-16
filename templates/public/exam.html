@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ exam.title }}{% endblock %}
+{% block content %}
+{% set base = '/exams/' ~ exam.id %}
+{% set scope = 'exam:' ~ exam.id %}
+{% set nav_title = exam.title %}
+{% set gabarito_url = ('/exams/' ~ exam.id ~ '/gabarito') if exam.answer_key_path else '' %}
+{% set caderno_url = ('/exams/' ~ exam.id ~ '/caderno') if exam.source_kind != 'package' else '' %}
+{% set pdf_page = question.page if question else '' %}
+{% include 'public/_question.html' %}
+{% endblock %}

@@ -1,0 +1,26 @@
+[project]
+name = "poscomp-web"
+version = "0.1.0"
+description = "Web app para importar, revisar e resolver provas POSCOMP."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "jinja2>=3.1.4",
+    "pymupdf>=1.24.0",
+    "python-multipart>=0.0.9",
+    "uvicorn[standard]>=0.30.0",
+]
+
+[project.scripts]
+poscomp-web = "poscomp_app.main:run"
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+include = ["poscomp_app*"]

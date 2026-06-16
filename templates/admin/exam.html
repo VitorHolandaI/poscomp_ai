@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ exam.title }} - Admin{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <h1>{{ exam.title }}</h1>
+  <p>Status: <span class="badge {{ exam.status }}">{{ exam.status }}</span></p>
+</section>
+
+<section class="grid two">
+  <article class="card">
+    <h2>Metadados</h2>
+    <form method="post" action="/admin/exams/{{ exam.id }}/metadata" class="stack">
+      <label>Ano <input name="year" value="{{ exam.year }}" required></label>
+      <label>Título <input name="title" value="{{ exam.title }}" required></label>
+      <label>Variante <input name="variant" value="{{ exam.variant }}"></label>
+      <button type="submit">Salvar</button>
+    </form>
+  </article>
+  <article class="card">
+    <h2>Resumo</h2>
+    <p>Questões: <strong>{{ stats.total or 0 }}</strong></p>
+    <p>Com gabarito: <strong>{{ stats.answered or 0 }}</strong></p>
+    <p>Com enunciado: <strong>{{ stats.with_statement or 0 }}</strong></p>
+    <p>Classificadas (tema): <strong id="classify-count">{{ stats.classified or 0 }}</strong> de <span id="classify-total">{{ stats.total or 0 }}</span></p>
+    <form method="post" action="/admin/exams/{{ exam.id }}/classify" class="classify-progress stack"
+          data-status-url="/admin/exams/{{ exam.id }}/classify/status"
+          data-count="classify-count" data-total="classify-total"
+          data-btn="classify-btn" data-status="classify-status"
+          data-idle-label="Classificar automaticamente (tema)" data-running="{{ '1' if classifying else '0' }}">
+      <button type="submit" id="classify-btn" {% if classifying %}disabled{% endif %}>
+        {% if classifying %}Classificando…{% else %}Classificar automaticamente (tema){% endif %}
+      </button>
+      <label class="checkbox"><input type="checkbox" name="force" value="true" {% if classifying %}disabled{% endif %}> Re-escanear as já classificadas (mantém as manuais)</label>
+    </form>
+    <p class="muted" id="classify-status">
+      {% if classifying %}Lote rodando em segundo plano via Ollama ({{ ollama_model }}). O número sobe sozinho aqui. Se cair, clique de novo — continua de onde parou.
+      {% else %}Sem o marcador: classifica só as questões sem tema. Marcado: re-escaneia também as já classificadas pela IA (preserva as manuais). Ollama: {{ ollama_host }} · {{ ollama_model }}{% endif %}
+    </p>
+    {% if exam.extraction_notes %}
+    <h3>Notas da extração</h3>
+    <pre class="notes">{{ exam.extraction_notes }}</pre>
+    {% endif %}
+  </article>
+</section>
+
+<section class="actions card">
+  <a class="button secondary" href="/admin/exams/{{ exam.id }}/questions">Editar questões</a>
+  <a class="button secondary" href="/admin/exams/{{ exam.id }}/answers">Editar gabarito</a>
+  <a class="button secondary" href="/admin/exams/{{ exam.id }}/export">Exportar pacote</a>
+  <form method="post" action="/admin/exams/{{ exam.id }}/reextract" class="classify-progress"
+        data-status-url="/admin/exams/{{ exam.id }}/reextract/status"
+        data-count="reextract-count" data-total="reextract-total"
+        data-btn="reextract-btn" data-status="reextract-status"
+        data-idle-label="Re-extrair imagens" data-busy-label="Re-extraindo…"
+        data-running="{{ '1' if reextracting else '0' }}"
+        onsubmit="return confirm('Regenerar os recortes das questões a partir dos PDFs? Substitui as imagens automáticas (mantém as enviadas à mão).')">
+    <button type="submit" class="secondary" id="reextract-btn" {% if reextracting %}disabled{% endif %}>
+      {% if reextracting %}Re-extraindo…{% else %}Re-extrair imagens{% endif %}
+    </button>
+    <span class="muted"><span id="reextract-count">0</span>/<span id="reextract-total">0</span></span>
+  </form>
+  <p class="muted" id="reextract-status"></p>
+  {% if exam.status == 'published' %}
+  <a class="button" href="/exams/{{ exam.id }}">Abrir prova pública</a>
+  <form method="post" action="/admin/exams/{{ exam.id }}/unpublish"><button type="submit" class="danger">Despublicar</button></form>
+  {% else %}
+  <form method="post" action="/admin/exams/{{ exam.id }}/publish"><button type="submit">Publicar</button></form>
+  {% endif %}
+</section>
+{% endblock %}

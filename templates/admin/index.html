@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Admin - POSCOMP Web{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <h1>Administração</h1>
+  <p>Importe PDFs, revise questões/gabarito, publique e exporte pacotes compartilháveis.</p>
+</section>
+
+<section class="grid two">
+  <article class="card">
+    <h2>Importar de Provas-POSCOMP</h2>
+    <p class="muted">Fonte: <code>{{ source_dir }}</code></p>
+    <form method="post" action="/admin/import-local" class="stack">
+      <label>Ano
+        <select name="year">
+          <option value="">Todos os anos</option>
+          {% for year in years %}<option value="{{ year }}">{{ year }}</option>{% endfor %}
+        </select>
+      </label>
+      <button type="submit">Extrair prova(s)</button>
+    </form>
+  </article>
+
+  <article class="card">
+    <h2>Upload manual</h2>
+    <form method="post" action="/admin/upload" enctype="multipart/form-data" class="stack">
+      <label>Ano <input name="year" required placeholder="2025"></label>
+      <label>Título <input name="title" required placeholder="POSCOMP 2025"></label>
+      <label>Variante <input name="variant" placeholder="Tipo 1, Tipo 2, etc."></label>
+      <label>PDF(s) da prova <input type="file" name="exam_files" accept="application/pdf" multiple required></label>
+      <label>PDF do gabarito <input type="file" name="answer_file" accept="application/pdf"></label>
+      <button type="submit">Enviar e extrair</button>
+    </form>
+  </article>
+</section>
+
+<section class="card">
+  <h2>Importar pacote exportado</h2>
+  <form method="post" action="/admin/import-package" enctype="multipart/form-data" class="inline-form">
+    <input type="file" name="package" accept="application/zip,.zip" required>
+    <button type="submit">Importar pacote</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Classificar por tema (todas as provas)</h2>
+  <p>Classificadas: <strong id="classify-all-count">{{ totals.classified or 0 }}</strong> de <span id="classify-all-total">{{ totals.total or 0 }}</span> questões</p>
+  <form method="post" action="/admin/classify-all" class="classify-progress stack"
+        data-status-url="/admin/classify-all/status"
+        data-count="classify-all-count" data-total="classify-all-total"
+        data-btn="classify-all-btn" data-status="classify-all-status"
+        data-idle-label="Escanear todas as provas" data-running="{{ '1' if classifying_all else '0' }}">
+    <button type="submit" id="classify-all-btn" {% if classifying_all %}disabled{% endif %}>
+      {% if classifying_all %}Escaneando…{% else %}Escanear todas as provas{% endif %}
+    </button>
+    <label class="checkbox"><input type="checkbox" name="force" value="true" {% if classifying_all %}disabled{% endif %}> Re-escanear as já classificadas (mantém as manuais)</label>
+  </form>
+  <p class="muted" id="classify-all-status">
+    {% if classifying_all %}Escaneando todas as provas em segundo plano via Ollama ({{ ollama_model }}). Pode fechar o navegador — o progresso é salvo no servidor e continua.
+    {% else %}Sem o marcador: classifica só as questões sem tema. Marcado: re-escaneia também as já classificadas pela IA (preserva as manuais). Salva uma a uma; fechar o navegador não perde o progresso. Ollama: {{ ollama_host }} · {{ ollama_model }}{% endif %}
+  </p>
+</section>
+
+<section class="card">
+  <h2>Provas cadastradas</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Ano</th><th>Título</th><th>Status</th><th>Questões</th><th>Ações</th></tr></thead>
+      <tbody>
+        {% for exam in exams %}
+        <tr>
+          <td>{{ exam.year }}</td>
+          <td>{{ exam.title }}</td>
+          <td><span class="badge {{ exam.status }}">{{ exam.status }}</span></td>
+          <td>{{ exam.question_count }}</td>
+          <td><a href="/admin/exams/{{ exam.id }}">Abrir</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5">Nenhuma prova cadastrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

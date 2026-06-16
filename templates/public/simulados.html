@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Simulados{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Simulados gerados</h1>
+  <p><a class="button" href="/">Gerar novo simulado</a></p>
+</section>
+
+<section class="cards">
+  {% for sim in simulados %}
+  <article class="exam-card sim-card">
+    <a class="sim-open" href="/simulado/{{ sim.id }}?q=1">
+      <span>{{ sim.created_at[:16] | replace('T', ' ') }}</span>
+      <strong>Simulado #{{ sim.id }}</strong>
+      <small>{{ sim.question_count }} questões</small>
+    </a>
+    <form method="post" action="/simulado/{{ sim.id }}/delete" onsubmit="return confirm('Apagar o simulado #{{ sim.id }}?')">
+      <button type="submit" class="delete-sim">Apagar</button>
+    </form>
+  </article>
+  {% else %}
+  <article class="card"><p>Nenhum simulado gerado ainda. <a href="/">Gere um na página inicial.</a></p></article>
+  {% endfor %}
+</section>
+
+{% if simulados %}
+<section class="card">
+  <form method="post" action="/simulados/clear" onsubmit="return confirm('Apagar TODOS os simulados gerados?')">
+    <button type="submit" class="clear-results">Limpar todos os simulados</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

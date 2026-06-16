@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Gabarito - {{ exam.title }}{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <h1>Gabarito: {{ exam.title }}</h1>
+  <p>Revise a resposta final. `Anulada` é aceita como alternativa especial.</p>
+</section>
+
+<form method="post" action="/admin/exams/{{ exam.id }}/answers" class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Questão</th><th>Extraído</th><th>Resposta final</th><th>Confiança</th></tr></thead>
+      <tbody>
+        {% for question in questions %}
+        <tr>
+          <td>{{ question.number }}</td>
+          <td>{{ question.extracted_answer or '-' }}</td>
+          <td>
+            <select name="answer_{{ question.number }}">
+              {% for value in ['', 'A', 'B', 'C', 'D', 'E', 'ANULADA'] %}
+              <option value="{{ value }}" {% if question.correct_answer == value %}selected{% endif %}>{{ value or '-' }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>{{ '%.0f'|format(question.answer_confidence * 100) }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="actions"><button type="submit">Salvar gabarito</button><a class="button secondary" href="/admin/exams/{{ exam.id }}">Voltar</a></div>
+</form>
+{% endblock %}

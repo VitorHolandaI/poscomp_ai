@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Questões - {{ exam.title }}{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <h1>Questões: {{ exam.title }}</h1>
+  <p>Abra uma questão para corrigir enunciado, alternativas, resposta e imagens.</p>
+</section>
+
+<section class="card">
+  <div class="question-list">
+    {% for question in questions %}
+    <a class="question-row" href="/admin/exams/{{ exam.id }}/questions/{{ question.id }}">
+      <strong>{{ question.number }}</strong>
+      <span>{{ question.statement[:180] or 'Sem enunciado detectado' }}</span>
+      <small>{{ question.correct_answer or 'sem gabarito' }}</small>
+    </a>
+    {% else %}
+    <p>Nenhuma questão detectada.</p>
+    {% endfor %}
+  </div>
+  <div class="actions"><a class="button secondary" href="/admin/exams/{{ exam.id }}">Voltar</a></div>
+</section>
+{% endblock %}

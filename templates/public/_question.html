@@ -1,0 +1,116 @@
+{# Partilha o "tomar prova" entre prova real e simulado.
+   Variáveis esperadas: base (prefixo de URL p/ nav e POST), scope (chave localStorage),
+   nav_title, gabarito_url (vazio = sem link), questions, question, original_images,
+   extra_images, selected, checked. O "número" exibido é genérico: na prova é o número
+   da questão; no simulado é a posição. #}
+<section class="exam-layout">
+  <aside class="question-nav card">
+    <h2>{{ nav_title }}</h2>
+    {% if gabarito_url %}
+    <a class="gabarito-link" href="{{ gabarito_url }}" target="_blank" rel="noopener">📄 Gabarito oficial (PDF)</a>
+    {% endif %}
+    <div class="number-grid">
+      {% for item in questions %}
+      <a href="{{ base }}?q={{ item.number }}" class="{% if item.status %}result-{{ item.status }}{% endif %} {% if question and item.number == question.number %}active{% endif %}">{{ item.number }}</a>
+      {% endfor %}
+    </div>
+    <form method="post" action="{{ base }}/clear" onsubmit="return confirm('Limpar todas as respostas marcadas?')">
+      <button type="submit" class="clear-results">Limpar respostas</button>
+    </form>
+  </aside>
+
+  {% if question %}
+  <article class="card question-card">
+    <div class="question-header">
+      <h1>Questão {{ question.number }}</h1>
+      {% if question.correct_answer == 'ANULADA' %}<span class="badge">Anulada</span>{% endif %}
+    </div>
+
+    {% if origin %}<p class="question-origin">Fonte: {{ origin }}</p>{% endif %}
+
+    {% if question.topic %}
+    <p class="question-topic">
+      <a href="/temas/{{ question.topic | urlencode }}">{{ question.area }} › {{ question.topic }}</a>{% if question.subtopic %} <span class="subtopic">› {{ question.subtopic }}</span>{% endif %}
+    </p>
+    {% endif %}
+
+    {% if original_images %}
+    <div class="original-images">
+      {% for image in original_images %}
+      <button class="question-thumb" type="button" data-dialog-id="question-image-{{ image.id }}" style="--thumb-url: url('/images/{{ image.filename }}')" aria-label="Abrir questão {{ question.number }} em tela cheia">
+        <span>Ver questão ampliada</span>
+      </button>
+      <dialog class="image-dialog" id="question-image-{{ image.id }}" aria-label="Questão {{ question.number }} ampliada">
+        <div class="image-dialog-bar">
+          <strong>Questão {{ question.number }}</strong>
+          <button type="button" class="dialog-close" data-close-dialog>Fechar</button>
+        </div>
+        <div class="zoom-surface">
+          <img class="zoom-image" src="/images/{{ image.filename }}" alt="Recorte original ampliado da questão {{ question.number }}">
+        </div>
+      </dialog>
+      {% endfor %}
+      <p class="image-hint">Toque na imagem para ampliar.</p>
+    </div>
+    {% else %}
+    <div class="statement">{{ question.statement | replace('\n', '<br>') | safe }}</div>
+      {% if extra_images %}
+      <div class="image-grid public-images">
+        {% for image in extra_images %}<img src="/images/{{ image.filename }}" alt="Imagem da questão {{ question.number }}">{% endfor %}
+      </div>
+      {% endif %}
+    {% endif %}
+
+    <form method="post" action="{{ base }}/answer" class="answer-panel alternatives {% if original_images %}letter-only{% endif %}">
+      <input type="hidden" name="number" value="{{ question.number }}">
+      {% for letter, text in [('A', question.alternative_a), ('B', question.alternative_b), ('C', question.alternative_c), ('D', question.alternative_d), ('E', question.alternative_e)] %}
+      <label class="alternative {% if checked and question.correct_answer == letter %}correct{% endif %} {% if checked and selected == letter and selected != question.correct_answer %}wrong{% endif %}">
+        <input type="radio" name="selected" value="{{ letter }}" {% if selected == letter %}checked{% endif %}>
+        <strong>{{ letter }}</strong>
+        {% if original_images %}
+        <span class="letter-label">Alternativa {{ letter }}</span>
+        {% else %}
+        <span>{{ text | replace('\n', '<br>') | safe }}</span>
+        {% endif %}
+      </label>
+      {% endfor %}
+      <button type="submit">Responder</button>
+    </form>
+
+    {% if original_images %}
+    <details class="parsed-details">
+      <summary>Ver texto extraído/editável</summary>
+      <div class="statement">{{ question.statement | replace('\n', '<br>') | safe }}</div>
+      <div class="parsed-alternatives">
+        {% for letter, text in [('A', question.alternative_a), ('B', question.alternative_b), ('C', question.alternative_c), ('D', question.alternative_d), ('E', question.alternative_e)] %}
+        <p><strong>{{ letter }})</strong> {{ text | replace('\n', '<br>') | safe }}</p>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
+
+    {% if checked %}
+    <section class="result {% if selected == question.correct_answer %}ok{% else %}bad{% endif %}">
+      {% if question.correct_answer == 'ANULADA' %}
+      Questão anulada.
+      {% elif selected == question.correct_answer %}
+      Você acertou. Resposta correta: {{ question.correct_answer }}.
+      {% else %}
+      Você errou. Resposta correta: {{ question.correct_answer or 'não cadastrada' }}.
+      {% endif %}
+    </section>
+    {% endif %}
+  </article>
+  {% endif %}
+</section>
+
+{% if caderno_url %}
+<button type="button" class="booklet-toggle" data-booklet-toggle aria-label="Abrir caderno da prova">📖 Caderno</button>
+<aside class="booklet-panel" id="booklet-panel" aria-hidden="true">
+  <div class="booklet-bar">
+    <strong>Caderno da prova</strong>
+    <button type="button" class="booklet-close" data-booklet-close>Fechar ✕</button>
+  </div>
+  <iframe class="booklet-frame" data-booklet-src="{{ caderno_url }}{% if pdf_page %}#page={{ pdf_page }}{% endif %}" title="Caderno da prova"></iframe>
+</aside>
+{% endif %}

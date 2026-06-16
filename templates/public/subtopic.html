@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ subtopic }}{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <h1>{{ subtopic }}</h1>
+  <p><a href="/subtemas{% if year_qs %}?{{ year_qs }}{% endif %}">← Subtemas</a> · {{ questions | length }} questões{% if selected_years %} ({{ selected_years | join(', ') }}){% endif %}</p>
+</section>
+
+<section class="question-list">
+  {% for q in questions %}
+  <a class="question-row" href="/exams/{{ q.exam_id }}?q={{ q.number }}">
+    <strong>{{ q.number }}</strong>
+    <span>
+      {{ q.exam_title }} ({{ q.year }})
+      {% if q.topic %}<small>· {{ q.topic }}</small>{% endif %}
+    </span>
+  </a>
+  {% else %}
+  <article class="card"><p>Nenhuma questão neste subtema{% if selected_years %} nos anos escolhidos{% endif %}.</p></article>
+  {% endfor %}
+</section>
+{% endblock %}

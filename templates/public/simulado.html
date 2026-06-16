@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Simulado #{{ sim.id }}{% endblock %}
+{% block content %}
+{% set base = '/simulado/' ~ sim.id %}
+{% set scope = 'sim:' ~ sim.id %}
+{% set nav_title = 'Simulado #' ~ sim.id ~ ' (' ~ sim.total ~ ' questões)' %}
+{% set gabarito_url = '' %}
+{% include 'public/_question.html' %}
+{% endblock %}

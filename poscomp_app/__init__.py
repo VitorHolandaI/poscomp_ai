@@ -1,0 +1,1 @@
+"""POSCOMP web app."""

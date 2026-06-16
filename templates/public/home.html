@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Provas POSCOMP{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Simulados POSCOMP</h1>
+  <p>Escolha uma prova publicada, marque uma alternativa e veja a correta depois de responder.</p>
+  <p><a class="button" href="/temas">Estudar por tema</a></p>
+</section>
+
+<section class="card">
+  <h2>Gerar simulado</h2>
+  <p>Sorteia questões na proporção do POSCOMP (Matemática 20 · Fundamentos 30 · Tecnologia 20) para o total escolhido.</p>
+  <form class="simulado-form" method="post" action="/simulado">
+    {% if sim_years %}
+    <div>
+      <strong>Anos:</strong>
+      <div class="year-options">
+        {% for year in sim_years %}
+        <label class="year-pill"><input type="checkbox" name="years" value="{{ year }}"> {{ year }}</label>
+        {% endfor %}
+      </div>
+      <small>Nenhum marcado = todos os anos.</small>
+    </div>
+    {% endif %}
+    <div class="num-row">
+      <label>Total de questões
+        <input type="number" name="total" value="10" min="1" max="200" required>
+      </label>
+    </div>
+    <p><button class="button" type="submit">Gerar simulado</button></p>
+  </form>
+</section>
+
+<section class="cards">
+  {% for exam in exams %}
+  <a class="exam-card" href="/exams/{{ exam.id }}">
+    <span>{{ exam.year }}</span>
+    <strong>{{ exam.title }}</strong>
+    <small>{{ exam.question_count }} questões</small>
+  </a>
+  {% else %}
+  <article class="card"><p>Nenhuma prova publicada ainda. Importe e publique em <a href="/admin">Admin</a>.</p></article>
+  {% endfor %}
+</section>
+{% endblock %}

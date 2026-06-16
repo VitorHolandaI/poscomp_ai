@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg
+*.egg-info/
+.eggs/
+
+# uv / virtualenv
+.venv/
+venv/
+env/
+ENV/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data (sqlite db, uploads, exports, images)
+var/
+*.sqlite3
+*.sqlite3-journal
+*.db
+
+# Test / coverage / type cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Scratch / handoffs de sessão (não fazem parte do projeto)
+handoff.txt
+HANDOFF.md
+achados_ocr.txt
+analise_poscomp_work/HANDOFF_POSCOMP_ANALISE.md
+analise_poscomp_work/poscomp_historical_draft.csv
+analise_poscomp_work/poscomp_historical_draft.jsonl

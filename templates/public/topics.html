@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Estudar por tema{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <h1>Estudar por tema</h1>
+  <p>Escolha um tema e resolva todas as questões daquele assunto, de qualquer prova publicada.</p>
+  <p><a class="button" href="/subtemas">Ver por subtema (filtrar por ano)</a></p>
+</section>
+
+{% for area, topics in areas.items() %}
+<section class="card">
+  <h2>{{ area }}</h2>
+  <div class="cards">
+    {% for topic in topics %}
+    <a class="exam-card" href="/temas/{{ topic.topic | urlencode }}">
+      <strong>{{ topic.topic }}</strong>
+      <small>{{ topic.question_count }} questões</small>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% else %}
+<article class="card"><p>Nenhuma questão classificada ainda. Classifique provas no <a href="/admin">Admin</a>.</p></article>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Por subtema{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <h1>Por subtema</h1>
+  <p><a href="/temas">← Temas gerais</a> · quantidade de questões por subtópico{% if selected_years %} ({{ selected_years | join(', ') }}){% endif %}.</p>
+</section>
+
+<section class="card">
+  <form method="get" action="/subtemas" class="simulado-form">
+    <div>
+      <strong>Anos:</strong>
+      <div class="year-options">
+        {% for year in all_years %}
+        <label class="year-pill"><input type="checkbox" name="years" value="{{ year }}" {% if year in selected_years %}checked{% endif %}> {{ year }}</label>
+        {% endfor %}
+      </div>
+      <small>Nenhum marcado = todos os anos.</small>
+    </div>
+    <p>
+      <button class="button" type="submit">Filtrar</button>
+      {% if selected_years %}<a class="button secondary" href="/subtemas">Limpar</a>{% endif %}
+    </p>
+  </form>
+</section>
+
+{% for area, topics in areas.items() %}
+<section class="card">
+  <h2>{{ area }}</h2>
+  {% for topic, subs in topics.items() %}
+  <h3 class="subtema-tema">{{ topic }}</h3>
+  <div class="cards">
+    {% for sub in subs %}
+    <a class="exam-card" href="/subtemas/{{ sub.subtopic | urlencode }}{% if year_qs %}?{{ year_qs }}{% endif %}">
+      <strong>{{ sub.subtopic }}</strong>
+      <small>{{ sub.question_count }} questões</small>
+    </a>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</section>
+{% else %}
+<article class="card"><p>Nenhuma questão com subtema {% if selected_years %}nesses anos{% else %}classificada{% endif %} ainda.</p></article>
+{% endfor %}
+{% endblock %}

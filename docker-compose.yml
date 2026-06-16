@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    image: poscomp-web
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - vardata:/app/var
+    expose:
+      - "8000"
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    # Porta 80 do host já é usada pelo nginx-proxy-manager.
+    # Exponha numa porta livre e aponte um Proxy Host do NPM para http://<host>:8090
+    ports:
+      - "8090:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - vardata:/srv:ro
+
+volumes:
+  vardata:

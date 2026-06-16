@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Questão {{ question.number }} - {{ exam.title }}{% endblock %}
+{% block content %}
+<section class="hero compact">
+  <h1>Questão {{ question.number }}</h1>
+  <p>{{ exam.title }}</p>
+</section>
+
+<form method="post" action="/admin/exams/{{ exam.id }}/questions/{{ question.id }}" enctype="multipart/form-data" class="card stack">
+  <label>Número <input type="number" name="number" value="{{ question.number }}" min="1" max="90" required></label>
+  <label>Enunciado <textarea name="statement" rows="10">{{ question.statement }}</textarea></label>
+  <div class="grid two">
+    <label>A <textarea name="alternative_a" rows="4">{{ question.alternative_a }}</textarea></label>
+    <label>B <textarea name="alternative_b" rows="4">{{ question.alternative_b }}</textarea></label>
+    <label>C <textarea name="alternative_c" rows="4">{{ question.alternative_c }}</textarea></label>
+    <label>D <textarea name="alternative_d" rows="4">{{ question.alternative_d }}</textarea></label>
+    <label>E <textarea name="alternative_e" rows="4">{{ question.alternative_e }}</textarea></label>
+    <label>Resposta correta
+      <select name="correct_answer">
+        {% for value in ['', 'A', 'B', 'C', 'D', 'E', 'ANULADA'] %}
+        <option value="{{ value }}" {% if question.correct_answer == value %}selected{% endif %}>{{ value or '-' }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </div>
+
+  <section>
+    <h2>Tema (classificação)</h2>
+    <p class="muted">
+      Atual:
+      {% if question.topic %}
+      <strong>{{ question.area }} › {{ question.topic }}{% if question.subtopic %} › {{ question.subtopic }}{% endif %}</strong>
+      <span class="badge">{{ question.topic_source or 'auto' }}{% if question.topic_confidence and question.topic_confidence < 1 %} · {{ '%.0f' | format(question.topic_confidence * 100) }}%{% endif %}</span>
+      {% else %}<em>sem tema</em>{% endif %}
+    </p>
+    <p><button formaction="/admin/exams/{{ exam.id }}/questions/{{ question.id }}/classify" formmethod="post" class="secondary small">Classificar com IA agora</button></p>
+    <div class="grid two">
+      <label>Tema
+        <select name="topic">
+          <option value="">— sem tema —</option>
+          {% for area, temas in temas_by_area.items() %}
+          <optgroup label="{{ area }}">
+            {% for tema in temas %}
+            <option value="{{ tema }}" {% if question.topic == tema %}selected{% endif %}>{{ tema }}</option>
+            {% endfor %}
+          </optgroup>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Subtópico <input name="subtopic" value="{{ question.subtopic }}"></label>
+    </div>
+  </section>
+
+  <section>
+    <h2>Recorte original do PDF</h2>
+    <p class="muted">Este recorte preserva fórmulas, código, tabelas e figuras mesmo quando o texto extraído fica ruim.</p>
+    <div class="original-images admin-original-images">
+      {% for image in original_images %}
+      <figure>
+        <img src="/images/{{ image.filename }}" alt="Recorte original da questão {{ question.number }}">
+        <figcaption>Página {{ image.source_page or '-' }}</figcaption>
+        <button formaction="/admin/images/{{ image.id }}/delete" formmethod="post" class="danger small">Remover</button>
+      </figure>
+      {% else %}
+      <p class="muted">Nenhum recorte original gerado.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <h2>Imagens extras</h2>
+    <div class="image-grid extra-images">
+      {% for image in extra_images %}
+      <figure>
+        <img src="/images/{{ image.filename }}" alt="Imagem da questão {{ question.number }}">
+        <figcaption>{{ image.label or 'imagem' }} · Página {{ image.source_page or '-' }}</figcaption>
+        <button formaction="/admin/images/{{ image.id }}/delete" formmethod="post" class="danger small">Remover</button>
+      </figure>
+      {% else %}
+      <p class="muted">Nenhuma imagem extra associada.</p>
+      {% endfor %}
+    </div>
+    <label>Adicionar imagem <input type="file" name="image_file" accept="image/*"></label>
+  </section>
+
+  <details>
+    <summary>Texto bruto extraído</summary>
+    <pre class="notes">{{ question.raw_text }}</pre>
+  </details>
+
+  <div class="actions"><button type="submit">Salvar questão</button><a class="button secondary" href="/admin/exams/{{ exam.id }}/questions">Voltar</a></div>
+</form>
+{% endblock %}
